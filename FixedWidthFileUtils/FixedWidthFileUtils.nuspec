@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>FixedWidthFileUtils</id>
-    <version>1.0</version>
+    <version>1.1</version>
     <title>FixedWidthFileUtils</title>
     <authors>mjones2219</authors>
     <owners>mjones2219</owners>
@@ -10,11 +10,8 @@
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/mjones2219/FixedWidthFileUtils</projectUrl>
     <description>Package for serializing/deserializing fixed width files from/to objects.</description>
-    <releaseNotes>First nuget release.</releaseNotes>
+    <releaseNotes>Fixed an issue which could cause an infinite loop when file does not match expected format.</releaseNotes>
     <copyright>Copyright 2020</copyright>
     <tags>fixed width files serialize deserialize</tags>
-    <dependencies>
-      <group targetFramework=".NETFramework4.6" />
-    </dependencies>
   </metadata>
 </package>

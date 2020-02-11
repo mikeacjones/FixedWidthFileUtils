@@ -9,7 +9,7 @@ namespace FixedWidthFileUtils
     public class FixedObjectPatternAttribute : Attribute
     {
         public string MatchPattern { get; private set; }
-        
+
         public FixedObjectPatternAttribute(string matchPattern)
         {
             this.MatchPattern = matchPattern;
