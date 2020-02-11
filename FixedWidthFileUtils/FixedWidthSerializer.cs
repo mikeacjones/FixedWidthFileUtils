@@ -100,7 +100,8 @@ namespace FixedWidthFileUtils
 		/// <typeparam name="TResult">Object type to deserialize to</typeparam>
 		/// <param name="inputStream">BufferedStreamReader to use when deserializing</param>
 		/// <returns></returns>
-		public static TResult Deserialize<TResult>(BufferedStreamReader inputStream, bool partOfEnum = false) where TResult : class
+		public static TResult Deserialize<TResult>(BufferedStreamReader inputStream, bool partOfEnum = false)
+			where TResult : class
 		{
 			if (inputStream.EndOfStream) return default;
 
@@ -116,6 +117,18 @@ namespace FixedWidthFileUtils
 				return methodInfo.Invoke(null, new[] { inputStream }) as TResult;
 			}
 
+			return DeserializeObject<TResult>(inputStream, partOfEnum);
+		}
+		/// <summary>
+		/// Deserializes an object
+		/// </summary>
+		/// <typeparam name="TResult">Type to return</typeparam>
+		/// <param name="inputStream">BufferedStreamReader to use when deserializing</param>
+		/// <param name="partOfEnum"></param>
+		/// <returns></returns>
+		private static TResult DeserializeObject<TResult>(BufferedStreamReader inputStream, bool partOfEnum)
+			where TResult : class
+		{
 			//first get the fields
 			var fields = typeof(TResult).GetSerializerFields();
 
@@ -123,61 +136,72 @@ namespace FixedWidthFileUtils
 			if (fields.Any(f => f.IsComplexType) && fields.Any(f => !f.IsComplexType))
 				throw new Exception($"Type {typeof(TResult).GetItemType()} mixes field and complex types which is not supported");
 
-			//cool, no rules broken! Create our returned type
-			TResult result = Activator.CreateInstance(typeof(TResult)) as TResult;
 
 			bool parsingFields = !fields.Any(f => f.IsComplexType);
-			if (!parsingFields)
+			if (parsingFields) return DeserializeObjectFields<TResult>(inputStream, fields, partOfEnum);
+
+
+			TResult result = Activator.CreateInstance(typeof(TResult)) as TResult;
+			foreach (var field in fields)
 			{
+				MethodInfo methodInfo = typeof(FixedWidthSerializer)
+					.GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
+					.FirstOrDefault(m => m.Name == "DeserializeObject");
+				field.Property.SetValue(result, methodInfo.Invoke(null, new object[] { inputStream, partOfEnum }));
+			}
+			return result;
+		}
+		/// <summary>
+		/// Method for populating fields of an object
+		/// </summary>
+		/// <typeparam name="TResult"></typeparam>
+		/// <param name="inputStream"></param>
+		/// <param name="fields"></param>
+		/// <param name="partOfEnum"></param>
+		/// <returns></returns>
+		private static TResult DeserializeObjectFields<TResult>(BufferedStreamReader inputStream, IEnumerable<SerializerField> fields, bool partOfEnum)
+			where TResult : class
+		{
+			TResult result = Activator.CreateInstance(typeof(TResult)) as TResult;
+
+			long totalWidth = fields.Sum(f => f.Width);
+			if (inputStream.PeekLine().Length != totalWidth) return default;
+			if (Attribute.IsDefined(typeof(TResult), typeof(FixedObjectPatternAttribute)))
+			{
+				FixedObjectPatternAttribute objectPattern = Attribute.GetCustomAttribute(typeof(TResult), typeof(FixedObjectPatternAttribute)) as FixedObjectPatternAttribute;
+				if (!Regex.IsMatch(inputStream.PeekLine(), objectPattern.MatchPattern))
+					if (!partOfEnum)
+						throw new FormatException($"Format does not match expected pattern.\r\nParsing object: {typeof(TResult)}\r\nMatch pattern: {objectPattern.MatchPattern}\r\nLine in file: {inputStream.ReadLine()}");
+					else return default;
+			}
+
+			string objectLine = inputStream.ReadLine();
+			try
+			{
+				int currentWidth = 0;
 				foreach (var field in fields)
 				{
-					MethodInfo methodInfo = typeof(FixedWidthSerializer)
-						.GetMethod("Deserialize", new[] { typeof(BufferedStreamReader), typeof(bool) })
-						.MakeGenericMethod(new[] { field.Property.PropertyType });
-					field.Property.SetValue(result, methodInfo.Invoke(null, new object[] { inputStream, false }));
+					string fieldText = objectLine.Substring(currentWidth, field.Width);
+					currentWidth += field.Width;
+
+					if (!field.Property.CanWrite) continue;
+
+					var serializer = Activator.CreateInstance(field.Converter);
+					var fieldValue = serializer
+						.GetType()
+						.GetMethod("Deserialize")
+						.Invoke(serializer, new[] { fieldText });
+					field.Property.SetValue(result, fieldValue);
 				}
 			}
-			else
+			catch
 			{
-				long totalWidth = fields.Sum(f => f.Width);
-				if (inputStream.PeekLine().Length != totalWidth) return default;
-				if (Attribute.IsDefined(typeof(TResult), typeof(FixedObjectPatternAttribute)))
+				if (partOfEnum)
 				{
-					FixedObjectPatternAttribute objectPattern = Attribute.GetCustomAttribute(typeof(TResult), typeof(FixedObjectPatternAttribute)) as FixedObjectPatternAttribute;
-					if (!Regex.IsMatch(inputStream.PeekLine(), objectPattern.MatchPattern))
-						if (!partOfEnum)
-							throw new FormatException($"Format does not match expected pattern.\r\nParsing object: {typeof(TResult)}\r\nMatch pattern: {objectPattern.MatchPattern}\r\nLine in file: {inputStream.ReadLine()}");
-						else return default;
+					inputStream.RequeueLine(objectLine);
+					return default;
 				}
-
-				string objectLine = inputStream.ReadLine();
-				try
-				{
-					int currentWidth = 0;
-					foreach (var field in fields)
-					{
-						string fieldText = objectLine.Substring(currentWidth, field.Width);
-						currentWidth += field.Width;
-
-						if (!field.Property.CanWrite) continue;
-
-						var serializer = Activator.CreateInstance(field.Converter);
-						var fieldValue = serializer
-							.GetType()
-							.GetMethod("Deserialize")
-							.Invoke(serializer, new[] { fieldText });
-						field.Property.SetValue(result, fieldValue);
-					}
-				}
-				catch
-				{
-					if (partOfEnum)
-					{
-						inputStream.RequeueLine(objectLine);
-						return default;
-					}
-					throw;
-				}
+				throw;
 			}
 
 			return result;
