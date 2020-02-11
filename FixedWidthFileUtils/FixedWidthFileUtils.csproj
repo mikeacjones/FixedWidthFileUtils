@@ -55,5 +55,8 @@
     <Compile Include="Serializers\DecimalToPenniesSerializer{T}.cs" />
     <Compile Include="Serializers\DefaultSerializer{T}.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="FixedWidthFileUtils.nuspec" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
