@@ -22,7 +22,7 @@ namespace Tests
             {
                 Header = new FileHeader
                 {
-                    AccountNumber = 8019000283,
+                    AccountNumber = 5555333111,
                     BankID = 164
                 },
                 CheckGroups = new[]
