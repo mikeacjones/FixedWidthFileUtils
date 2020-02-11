@@ -165,7 +165,13 @@ namespace FixedWidthFileUtils
 			TResult result = Activator.CreateInstance(typeof(TResult)) as TResult;
 
 			long totalWidth = fields.Sum(f => f.Width);
-			if (inputStream.PeekLine().Length != totalWidth) return default;
+			if (inputStream.PeekLine().Length != totalWidth)
+			{
+				if (!partOfEnum)
+					throw new FormatException($"Format does not match expected width.\r\nParsing object: {typeof(TResult)}\r\nExpected width: {totalWidth}\r\nLine in file: {inputStream.ReadLine()}");
+				return default;
+			}
+
 			if (Attribute.IsDefined(typeof(TResult), typeof(FixedObjectPatternAttribute)))
 			{
 				FixedObjectPatternAttribute objectPattern = Attribute.GetCustomAttribute(typeof(TResult), typeof(FixedObjectPatternAttribute)) as FixedObjectPatternAttribute;

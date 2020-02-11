@@ -47,6 +47,9 @@ namespace Tests
 
 		[FixedField(3, 1)]
 		public int AlwaysZero => 0;
+
+		[FixedField(4, 61, ' ')]
+		public string Spacing => string.Empty;
 	}
 	public class CheckRecord
 	{
