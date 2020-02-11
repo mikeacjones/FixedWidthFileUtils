@@ -145,8 +145,8 @@ namespace FixedWidthFileUtils
 			foreach (var field in fields)
 			{
 				MethodInfo methodInfo = typeof(FixedWidthSerializer)
-					.GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
-					.FirstOrDefault(m => m.Name == "DeserializeObject");
+					.GetMethod("Deserialize", new[] { typeof(BufferedStreamReader), typeof(bool) })
+					.MakeGenericMethod(new[] { field.Property.PropertyType });
 				field.Property.SetValue(result, methodInfo.Invoke(null, new object[] { inputStream, partOfEnum }));
 			}
 			return result;
