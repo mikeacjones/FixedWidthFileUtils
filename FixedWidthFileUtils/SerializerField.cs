@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace FixedWidthFileUtils
@@ -6,14 +7,14 @@ namespace FixedWidthFileUtils
     /// <summary>
     /// Object that wraps up necessary information about serializable fields
     /// </summary>
-    public class SerializerField
+    internal class SerializerField
     {
         public int Position { get; private set; }
         public int Width { get; private set; }
         public char Padder { get; private set; }
         public FixedFieldAlignment Alignment { get; private set; }
         public FixedFieldOverflowMode OverflowMode { get; private set; }
-        public PropertyInfo Property { get; private set; }
+        public FastProperty Property { get; private set; }
         public Type Converter { get; private set; }
         public bool IsComplexType { get; private set; }
         /// <summary>
@@ -29,7 +30,7 @@ namespace FixedWidthFileUtils
             this.Padder = config.Padder;
             this.Alignment = config.Alignment;
             this.OverflowMode = config.OverflowMode;
-            this.Property = prop;
+            this.Property = new FastProperty(prop);
             this.Converter = converter;
             this.IsComplexType = prop.PropertyType.IsComplexType();
         }

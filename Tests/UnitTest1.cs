@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -49,8 +50,18 @@ namespace Tests
                 }
             };
 
-
+            //Assert.AreEqual(13, FixedWidthSerializer.CacheSize);
             Assert.IsTrue(expectedFile.ObjectEquals(actualFile));
+        }
+
+        [TestMethod]
+        public void LargeFileText()
+        {
+            PositivePayFile pf;
+            using (FileStream fs = new FileStream(@"C:\temp\pos_AP_20200212211501813.txt", FileMode.Open, FileAccess.Read))
+                pf = FixedWidthSerializer.Deserialize<PositivePayFile>(fs);
+            Debug.WriteLine(pf.CheckGroups.Sum(cg => cg.Records.Length));
+
         }
     }
 
@@ -143,7 +154,7 @@ namespace Tests
     }
     public class CheckRecord
     {
-        [FixedField(0, 10)]
+        [FixedField(0, 10, ' ', FixedFieldAlignment.Left, FixedFieldOverflowMode.Truncate)]
         public long CheckSerial { get; set; }
 
         [FixedField(1, 6)]
@@ -176,6 +187,7 @@ namespace Tests
         [FixedField(1)]
         public CheckGroupTrailer Trailer { get; set; }
     }
+    [FixedObjectPattern("^&")]
     public class CheckGroupTrailer
     {
         [FixedField(0, 15, ' ', FixedFieldAlignment.Left)]

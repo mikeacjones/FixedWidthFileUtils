@@ -18,15 +18,19 @@ namespace FixedWidthFileUtils
         {
             return !t.IsValueType && t != typeof(string);
         }
+
+        private static Dictionary<Type, IEnumerable<SerializerField>> FieldCache = new Dictionary<Type, IEnumerable<SerializerField>>();
         /// <summary>
         /// Gets a collection of SerializerField objects from the Type; these are found by looking
         /// for properties decorated with the FixedFieldAttribute
         /// </summary>
         /// <param name="o">Type to get SerializerField collection for</param>
         /// <returns>Collection of SerializerField objects</returns>
+        /// 
         public static IEnumerable<SerializerField> GetSerializerFields(this Type o)
         {
-            return o.GetProperties()
+            if (FieldCache.TryGetValue(o, out IEnumerable<SerializerField> fields)) return fields;
+            FieldCache.Add(o, o.GetProperties()
                 .Where(p => Attribute.IsDefined(p, typeof(FixedFieldAttribute)))
                 .Select(p =>
                 {
@@ -40,7 +44,9 @@ namespace FixedWidthFileUtils
                     });
                 })
                 .SelectMany(ffs => ffs)
-                .OrderBy(f => f.Position);
+                .OrderBy(f => f.Position)
+                .ToArray());
+            return FieldCache[o];
         }
         /// <summary>
         /// Checks if the Type is an IEnumerable

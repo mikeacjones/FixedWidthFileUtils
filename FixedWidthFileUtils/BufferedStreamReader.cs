@@ -9,7 +9,7 @@ namespace FixedWidthFileUtils
     public class BufferedStreamReader : StreamReader
     {
         private Queue<string> Buffer = new Queue<string>();
-
+        public int CurrentLine { get; private set; } = 0;
         /// <summary>
         /// Creates a new BufferedStreamReader from a Stream
         /// </summary>
@@ -36,6 +36,7 @@ namespace FixedWidthFileUtils
         /// <param name="line"></param>
         public void RequeueLine(string line)
         {
+            CurrentLine--;
             Buffer.Enqueue(line);
         }
         /// <summary>
@@ -44,6 +45,7 @@ namespace FixedWidthFileUtils
         /// <returns>Next line</returns>
         public override string ReadLine()
         {
+            CurrentLine++;
             if (Buffer.Count > 0)
                 return Buffer.Dequeue();
             return base.ReadLine();

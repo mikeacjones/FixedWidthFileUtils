@@ -46,7 +46,7 @@ namespace FixedWidthFileUtils
                 if (field.IsComplexType)
                 {
                     if (i > 0) output.Append(Environment.NewLine);
-                    output.Append(Serialize(field.Property.GetValue(o)));
+                    output.Append(Serialize(field.Property.Get(o)));                    
                 }
                 else
                 {
@@ -54,7 +54,7 @@ namespace FixedWidthFileUtils
                     string result = (string)serializer
                         .GetType()
                         .GetMethod("Serialize")
-                        .Invoke(serializer, new[] { field.Property.GetValue(o) });
+                        .Invoke(serializer, new[] { field.Property.Get(o) });
 
                     if (result.Length > field.Width)
                         if (field.OverflowMode == FixedFieldOverflowMode.NoOverflow)
@@ -104,7 +104,6 @@ namespace FixedWidthFileUtils
             where TResult : class
         {
             if (inputStream.EndOfStream) return default;
-
             if (typeof(TResult).IsEnumerable()) //enumerables are a special case
             {
                 Type itemType = typeof(TResult).GetItemType();
@@ -147,7 +146,7 @@ namespace FixedWidthFileUtils
                 MethodInfo methodInfo = typeof(FixedWidthSerializer)
                     .GetMethod("Deserialize", new[] { typeof(BufferedStreamReader), typeof(bool) })
                     .MakeGenericMethod(new[] { field.Property.PropertyType });
-                field.Property.SetValue(result, methodInfo.Invoke(null, new object[] { inputStream, partOfEnum }));
+                field.Property.Set(result, methodInfo.Invoke(null, new object[] { inputStream, partOfEnum }));
             }
             return result;
         }
@@ -197,7 +196,7 @@ namespace FixedWidthFileUtils
                         .GetType()
                         .GetMethod("Deserialize")
                         .Invoke(serializer, new[] { fieldText });
-                    field.Property.SetValue(result, fieldValue);
+                    field.Property.Set(result, fieldValue);
                 }
             }
             catch

@@ -2,6 +2,8 @@
 
 Tool for serializing objects to fixed width files, or deserializing fixed width files to objects.
 
+Current largest file test contained 36,864 records in the Wells Fargo format, and took ~700 milliseconds.
+
 Some rules to keep in mind:
 
 - Position of the `FixedField` defines the order of the value rather than the start index of the substring - EG: `00001 Michael`: though the name field starts at character index 5, its position is the second element, position would be 1 (elements use a 0 index position)
