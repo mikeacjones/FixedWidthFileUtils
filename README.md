@@ -2,7 +2,7 @@
 
 Tool for serializing objects to fixed width files, or deserializing fixed width files to objects.
 
-Current largest file test contained 1,179,648 records in the Wells Fargo format, and took ~18 seconds to deserialize.
+Current largest file test contained 1,179,648 records in the Wells Fargo format, and took ~10 seconds to deserialize.
 
 Some rules to keep in mind:
 
