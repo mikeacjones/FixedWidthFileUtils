@@ -16,5 +16,11 @@
         <frameworkAssemblies>
             <frameworkAssembly assemblyName="System.dll" />
         </frameworkAssemblies>
+        <dependencies>
+            <group targetFramework=".NETFramework3.5">
+            </group>
+            <group targetFramework="net35">
+            </group>
+        </dependencies>
     </metadata>
 </package>
