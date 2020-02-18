@@ -9,14 +9,14 @@ namespace FixedWidthFileUtils
     /// </summary>
     internal class SerializerField
     {
-        public int Position { get; private set; }
-        public int Width { get; private set; }
-        public char Padder { get; private set; }
-        public FixedFieldAlignment Alignment { get; private set; }
-        public FixedFieldOverflowMode OverflowMode { get; private set; }
-        public FastProperty Property { get; private set; }
-        public Type Converter { get; private set; }
-        public bool IsComplexType { get; private set; }
+        public int Position { get; }
+        public int Width { get; }
+        public char Padder { get; }
+        public FixedFieldAlignment Alignment { get; }
+        public FixedFieldOverflowMode OverflowMode { get; }
+        public FastProperty Property { get; }
+        public Type Converter { get; }
+        public bool IsComplexType { get; }
         /// <summary>
         /// Creates anew SerializerField that wraps up the necessary information for serializing/deserializing an object
         /// </summary>

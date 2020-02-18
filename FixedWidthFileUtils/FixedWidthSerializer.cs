@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,6 +15,11 @@ namespace FixedWidthFileUtils
     /// </summary>
     public static class FixedWidthSerializer
     {
+        private static readonly Dictionary<Type, Func<BufferedStreamReader, bool, object>> _GenericMethodCache = new Dictionary<Type, Func<BufferedStreamReader, bool, object>>();
+        private static readonly Dictionary<Type, Func<BufferedStreamReader, object>> _GenericEnumerableMethodCache = new Dictionary<Type, Func<BufferedStreamReader, object>>();
+        private static readonly Dictionary<Type, object> _SerializerCache = new Dictionary<Type, object>();
+        private static readonly Dictionary<Type, Func<object, string, object>> _SerializerMethodCache = new Dictionary<Type, Func<object, string, object>>();
+
         #region SERIALIZE
         /// <summary>
         /// Serializes an object to a string containing fixed width file data. Only fields decorated with the FixedField attribute are serialized.
@@ -108,12 +114,18 @@ namespace FixedWidthFileUtils
             {
                 Type itemType = typeof(TResult).GetItemType();
 
+                if (_GenericEnumerableMethodCache.TryGetValue(itemType, out Func<BufferedStreamReader, object> func)) return func(inputStream) as TResult;
+
                 MethodInfo methodInfo = typeof(FixedWidthSerializer)
                     .GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
                     .FirstOrDefault(m => m.Name == "DeserializeEnumerable")
                     .MakeGenericMethod(new[] { typeof(TResult), itemType });
+                var inputStreamParam = Expression.Parameter(typeof(BufferedStreamReader), "inputStream");
+                var call = Expression.Call(methodInfo, inputStreamParam);
+                var lambda = Expression.Lambda<Func<BufferedStreamReader, object>>(call, inputStreamParam).Compile();
+                _GenericEnumerableMethodCache.Add(itemType, lambda);
 
-                return methodInfo.Invoke(null, new[] { inputStream }) as TResult;
+                return lambda(inputStream) as TResult;
             }
 
             return DeserializeObject<TResult>(inputStream, partOfEnum);
@@ -143,10 +155,20 @@ namespace FixedWidthFileUtils
             TResult result = Activator.CreateInstance(typeof(TResult)) as TResult;
             foreach (var field in fields)
             {
-                MethodInfo methodInfo = typeof(FixedWidthSerializer)
-                    .GetMethod("Deserialize", new[] { typeof(BufferedStreamReader), typeof(bool) })
-                    .MakeGenericMethod(new[] { field.Property.PropertyType });
-                field.Property.Set(result, methodInfo.Invoke(null, new object[] { inputStream, partOfEnum }));
+                if (_GenericMethodCache.TryGetValue(field.Property.PropertyType, out Func<BufferedStreamReader, bool, object> func))
+                    field.Property.Set(result, func(inputStream, partOfEnum));
+                else
+                {
+                    MethodInfo methodInfo = typeof(FixedWidthSerializer)
+                        .GetMethod("Deserialize", new[] { typeof(BufferedStreamReader), typeof(bool) })
+                        .MakeGenericMethod(new[] { field.Property.PropertyType });
+                    var inputStreamParam = Expression.Parameter(typeof(BufferedStreamReader), "inputStream");
+                    var partOfEnumParam = Expression.Parameter(typeof(bool), "partOfEnum");
+                    var call = Expression.Call(methodInfo, inputStreamParam, partOfEnumParam);
+                    var lambda = Expression.Lambda<Func<BufferedStreamReader, bool, object>>(call, inputStreamParam, partOfEnumParam).Compile();
+                    _GenericMethodCache.Add(field.Property.PropertyType, lambda);
+                    field.Property.Set(result, lambda(inputStream, partOfEnum));
+                }
             }
             return result;
         }
@@ -191,12 +213,26 @@ namespace FixedWidthFileUtils
 
                     if (!field.Property.CanWrite) continue;
 
-                    var serializer = Activator.CreateInstance(field.Converter);
-                    var fieldValue = serializer
-                        .GetType()
-                        .GetMethod("Deserialize")
-                        .Invoke(serializer, new[] { fieldText });
-                    field.Property.Set(result, fieldValue);
+                    if (_SerializerCache.TryGetValue(field.Converter, out object serializerInstance) && _SerializerMethodCache.TryGetValue(field.Converter, out Func<object, string, object> func))
+                        field.Property.Set(result, func(serializerInstance, fieldText));
+                    else
+                    {
+                        var serializer = Activator.CreateInstance(field.Converter);
+                        var methodInfo = serializer
+                            .GetType()
+                            .GetMethod("Deserialize");
+
+                        var instance = Expression.Parameter(typeof(object), "instance");
+                        var instanceCast = Expression.TypeAs(instance, field.Converter);
+                        var inputString = Expression.Parameter(typeof(string), "inputString");
+                        var call = Expression.Call(instanceCast, methodInfo, inputString);
+                        var typeAs = Expression.TypeAs(call, typeof(object));
+
+                        var lambda = Expression.Lambda<Func<object, string, object>>(typeAs, instance, inputString).Compile();
+                        _SerializerCache.Add(field.Converter, serializer);
+                        _SerializerMethodCache.Add(field.Converter, lambda);
+                        field.Property.Set(result, lambda(serializer, fieldText));
+                    }
                 }
             }
             catch
