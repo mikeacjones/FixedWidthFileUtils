@@ -34,8 +34,8 @@ namespace FixedWidthFileUtils
                 .Where(p => Attribute.IsDefined(p, typeof(FixedFieldAttribute)))
                 .Select(p =>
                 {
-                    var serializerAttrs = p.GetCustomAttributes(typeof(FixedFieldAttribute)).Cast<FixedFieldAttribute>();
-                    var conveterAttr = p.GetCustomAttribute(typeof(FixedFieldSerializerAttribute)) as FixedFieldSerializerAttribute;
+                    var serializerAttrs = p.GetCustomAttributes(typeof(FixedFieldAttribute), false).Cast<FixedFieldAttribute>();
+                    var conveterAttr = p.GetCustomAttributes(typeof(FixedFieldSerializerAttribute), false).FirstOrDefault() as FixedFieldSerializerAttribute;
 
                     return serializerAttrs.Select(sa =>
                     {
@@ -77,7 +77,7 @@ namespace FixedWidthFileUtils
             var enumType = type
                 .GetInterfaces()
                 .Where(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-                .Select(t => t.GenericTypeArguments[0]).FirstOrDefault();
+                .Select(t => t.GetGenericArguments().FirstOrDefault()).FirstOrDefault();
             return enumType ?? type;
         }
     }
