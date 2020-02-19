@@ -1,12 +1,15 @@
-﻿using FixedWidthFileUtils.Serializers;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using FixedWidthFileUtils.Attributes;
+using FixedWidthFileUtils.Serializers;
 
-namespace FixedWidthFileUtils
+namespace FixedWidthFileUtils.Utilities
 {
+    /// <summary>
+    /// Extensions class
+    /// </summary>
     internal static class Extensions
     {
         /// <summary>
@@ -19,7 +22,7 @@ namespace FixedWidthFileUtils
             return !t.IsValueType && t != typeof(string);
         }
 
-        private static Dictionary<Type, IEnumerable<SerializerField>> FieldCache = new Dictionary<Type, IEnumerable<SerializerField>>();
+        private static readonly Dictionary<Type, SerializerField[]> FieldCache = new Dictionary<Type, SerializerField[]>();
         /// <summary>
         /// Gets a collection of SerializerField objects from the Type; these are found by looking
         /// for properties decorated with the FixedFieldAttribute
@@ -27,19 +30,19 @@ namespace FixedWidthFileUtils
         /// <param name="o">Type to get SerializerField collection for</param>
         /// <returns>Collection of SerializerField objects</returns>
         /// 
-        public static IEnumerable<SerializerField> GetSerializerFields(this Type o)
+        public static SerializerField[] GetSerializerFields(this Type o)
         {
-            if (FieldCache.TryGetValue(o, out IEnumerable<SerializerField> fields)) return fields;
+            if (FieldCache.TryGetValue(o, out var fields)) return fields;
             FieldCache.Add(o, o.GetProperties()
                 .Where(p => Attribute.IsDefined(p, typeof(FixedFieldAttribute)))
                 .Select(p =>
                 {
                     var serializerAttrs = p.GetCustomAttributes(typeof(FixedFieldAttribute), false).Cast<FixedFieldAttribute>();
-                    var conveterAttr = p.GetCustomAttributes(typeof(FixedFieldSerializerAttribute), false).FirstOrDefault() as FixedFieldSerializerAttribute;
+                    var converterAttr = p.GetCustomAttributes(typeof(FixedFieldSerializerAttribute), false).FirstOrDefault() as FixedFieldSerializerAttribute;
 
                     return serializerAttrs.Select(sa =>
                     {
-                        Type serializer = conveterAttr?.Type ?? typeof(DefaultSerializer<>).MakeGenericType(p.PropertyType);
+                        var serializer = converterAttr?.Type ?? typeof(DefaultSerializer<>).MakeGenericType(p.PropertyType);
                         return new SerializerField(sa, p, serializer);
                     });
                 })

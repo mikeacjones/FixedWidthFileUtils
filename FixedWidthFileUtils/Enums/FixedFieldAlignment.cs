@@ -1,4 +1,4 @@
-﻿namespace FixedWidthFileUtils
+﻿namespace FixedWidthFileUtils.Enums
 {
     /// <summary>
     /// Controls the alignment of fixed field values

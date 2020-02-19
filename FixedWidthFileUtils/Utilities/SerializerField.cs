@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Linq.Expressions;
 using System.Reflection;
+using FixedWidthFileUtils.Attributes;
+using FixedWidthFileUtils.Enums;
 
-namespace FixedWidthFileUtils
+namespace FixedWidthFileUtils.Utilities
 {
     /// <summary>
     /// Object that wraps up necessary information about serializable fields

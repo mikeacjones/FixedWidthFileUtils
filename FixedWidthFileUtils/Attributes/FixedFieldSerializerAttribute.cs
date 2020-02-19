@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FixedWidthFileUtils
+namespace FixedWidthFileUtils.Attributes
 {
     /// <summary>
     /// Attribute for specifying a custom serializer for a field
@@ -8,9 +8,9 @@ namespace FixedWidthFileUtils
     [AttributeUsage(AttributeTargets.Property)]
     public class FixedFieldSerializerAttribute : Attribute
     {
-        public Type Type { get; private set; }
+        public Type Type { get; }
         /// <summary>
-        /// Creates a new FixedFieldSerializerAttribute which uses the specific FixedFieldSerializer<>
+        /// Creates a new FixedFieldSerializerAttribute which uses the specific FixedFieldSerializer{T}
         /// </summary>
         /// <param name="serializerType"></param>
         public FixedFieldSerializerAttribute(Type serializerType)

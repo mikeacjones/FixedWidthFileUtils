@@ -1,6 +1,7 @@
 ﻿using System;
+using FixedWidthFileUtils.Enums;
 
-namespace FixedWidthFileUtils
+namespace FixedWidthFileUtils.Attributes
 {
     /// <summary>
     /// Attribute for marking a field as a serializable field
@@ -8,11 +9,11 @@ namespace FixedWidthFileUtils
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
     public class FixedFieldAttribute : Attribute
     {
-        public int Position { get; private set; }
-        public int Width { get; private set; }
-        public char Padder { get; private set; }
-        public FixedFieldAlignment Alignment { get; private set; }
-        public FixedFieldOverflowMode OverflowMode { get; private set; }
+        public int Position { get; }
+        public int Width { get; }
+        public char Padder { get; }
+        public FixedFieldAlignment Alignment { get; }
+        public FixedFieldOverflowMode OverflowMode { get; }
         /// <summary>
         /// Creates a new FixedFieldAttribute
         /// </summary>
@@ -32,7 +33,7 @@ namespace FixedWidthFileUtils
             this.Width = width;
             this.Padder = padder;
             this.Alignment = alignment;
-            this.OverflowMode = OverflowMode;
+            this.OverflowMode = overflowMode;
         }
     }
 }

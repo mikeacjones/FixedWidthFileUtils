@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using FixedWidthFileUtils.Attributes;
+using FixedWidthFileUtils.Enums;
 
 namespace Tests
 {
@@ -17,9 +19,9 @@ namespace Tests
         [TestMethod]
         public void TestDeserializeWFFile()
         {
-            PositivePayFile actualFile = FixedWidthSerializer.Deserialize<PositivePayFile>(Properties.Resources.pos_AP_20200207211501810);
+            var actualFile = FixedWidthSerializer.Deserialize<PositivePayFile>(Properties.Resources.pos_AP_20200207211501810);
 
-            PositivePayFile expectedFile = new PositivePayFile
+            var expectedFile = new PositivePayFile
             {
                 Header = new FileHeader
                 {
@@ -58,7 +60,7 @@ namespace Tests
         public void LargeFileText()
         {
             PositivePayFile pf;
-            using (FileStream fs = new FileStream(@"C:\temp\pos_AP_20200212211501813.txt", FileMode.Open, FileAccess.Read))
+            using (var fs = new FileStream(@"C:\temp\pos_AP_20200212211501813.txt", FileMode.Open, FileAccess.Read))
             {
                 pf = FixedWidthSerializer.Deserialize<PositivePayFile>(fs);
             }
@@ -88,8 +90,8 @@ namespace Tests
                     if (leftEnumerable != null & rightEnumerable == null) return false;
                     if (leftEnumerable.Count != rightEnumerable.Count) return false;
 
-                    IEnumerator leftEnumerator = leftEnumerable.GetEnumerator();
-                    IEnumerator rightEnumerator = rightEnumerable.GetEnumerator();
+                    var leftEnumerator = leftEnumerable.GetEnumerator();
+                    var rightEnumerator = rightEnumerable.GetEnumerator();
                     while (leftEnumerator.MoveNext() && rightEnumerator.MoveNext())
                     {
                         if (!ObjectEquals(leftEnumerator.Current, rightEnumerator.Current))
@@ -106,7 +108,7 @@ namespace Tests
                         return false;
 
                     if (!ObjectEquals(left, right)) return false;
-                } 
+                }
                 else
                 {
                     var defaultComparerProperty = typeof(EqualityComparer<>)
@@ -115,7 +117,7 @@ namespace Tests
                         .GetValue(null, null);
 
                     var methodInfo = defaultComparerProperty.GetType().GetMethod("Equals", new Type[] { prop.PropertyType, prop.PropertyType });
-                    bool result = (bool)methodInfo.Invoke(defaultComparerProperty, new[] { prop.GetValue(source), prop.GetValue(target) });
+                    var result = (bool)methodInfo.Invoke(defaultComparerProperty, new[] { prop.GetValue(source), prop.GetValue(target) });
                     if (!result) return false;
                 }
             }
@@ -130,7 +132,7 @@ namespace Tests
             return typeof(IEnumerable).IsAssignableFrom(t) && t != typeof(string);
         }
     }
-    
+
     #region MODELS
     public class PositivePayFile
     {
