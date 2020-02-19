@@ -1,4 +1,6 @@
-﻿namespace FixedWidthFileUtils
+﻿using System;
+
+namespace FixedWidthFileUtils
 {
     /// <summary>
     /// Abstract class definition for creating custom serializer
@@ -18,5 +20,7 @@
         /// <param name="input"></param>
         /// <returns></returns>
         public abstract string Serialize(TType input);
+
+        public Type Type => typeof(TType);
     }
 }

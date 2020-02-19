@@ -57,11 +57,12 @@ namespace Tests
         [TestMethod]
         public void LargeFileText()
         {
+            PositivePayFile pf;
             using (FileStream fs = new FileStream(@"C:\temp\pos_AP_20200212211501813.txt", FileMode.Open, FileAccess.Read))
             {
-                PositivePayFile pf = FixedWidthSerializer.Deserialize<PositivePayFile>(fs);
+                pf = FixedWidthSerializer.Deserialize<PositivePayFile>(fs);
             }
-            //Debug.WriteLine(pf.CheckGroups.Sum(cg => cg.Records.Length));
+            Debug.WriteLine(pf.CheckGroups.Sum(cg => cg.Records.Length));
             //string serializedData = FixedWidthSerializer.Serialize(pf);
         }
     }

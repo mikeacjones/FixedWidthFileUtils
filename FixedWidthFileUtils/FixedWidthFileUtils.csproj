@@ -33,8 +33,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BufferedStreamReader.cs" />
+    <Compile Include="ExpressionHelper.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FastProperty.cs" />
+    <Compile Include="FieldSerializer.cs" />
     <Compile Include="FixedFieldAlignment.cs" />
     <Compile Include="FixedFieldAttribute.cs" />
     <Compile Include="FixedFieldOverflowMode.cs" />
