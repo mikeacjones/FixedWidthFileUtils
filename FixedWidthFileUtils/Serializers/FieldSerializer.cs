@@ -9,23 +9,23 @@ namespace FixedWidthFileUtils.Serializers
     /// </summary>
     internal class FieldSerializer
     {
-        private Func<object, string, object> DeserializeFunc { get; }
-        private Func<object, object, string> SerializeFunc { get; }
-        private object Serializer { get; }
+        private readonly Func<object, string, object> _deserializeFunc;
+        private readonly Func<object, object, string> _serializeFunc;
+        private readonly object _serializer;
 
         public object Deserialize(string input)
         {
-            return DeserializeFunc(Serializer, input);
+            return _deserializeFunc(_serializer, input);
         }
 
         public string Serialize(object input)
         {
-            return SerializeFunc(Serializer, input);
+            return _serializeFunc(_serializer, input);
         }
 
         public FieldSerializer(Type type)
         {
-            Serializer = Activator.CreateInstance(type);
+            _serializer = Activator.CreateInstance(type);
 
             //INIT DESERIALIZE FUNC
             var deserializeMethodInfo = type.GetMethod("Deserialize");
@@ -36,7 +36,7 @@ namespace FixedWidthFileUtils.Serializers
             var inputString = Expression.Parameter(typeof(string), "inputString");
             var dcall = Expression.Call(instanceCast, deserializeMethodInfo, inputString);
             var typeAs = Expression.TypeAs(dcall, typeof(object));
-            DeserializeFunc = Expression.Lambda<Func<object, string, object>>(typeAs, instance, inputString).Compile();
+            _deserializeFunc = Expression.Lambda<Func<object, string, object>>(typeAs, instance, inputString).Compile();
 
             //INIT SERIALIZE FUNC
             var serializeMethodInfo = type.GetMethod("Serialize");
@@ -47,7 +47,7 @@ namespace FixedWidthFileUtils.Serializers
             var inputObject = Expression.Parameter(typeof(object), "inputObject");
             var inputCast = inputType.IsValueType ? Expression.Convert(inputObject, inputType) : Expression.TypeAs(inputObject, inputType);
             var scall = Expression.Call(instanceCast, serializeMethodInfo, inputCast);
-            SerializeFunc = Expression.Lambda<Func<object, object, string>>(scall, instance, inputObject).Compile();
+            _serializeFunc = Expression.Lambda<Func<object, object, string>>(scall, instance, inputObject).Compile();
         }
     }
 }

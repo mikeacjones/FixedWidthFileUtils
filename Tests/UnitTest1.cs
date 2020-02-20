@@ -17,7 +17,7 @@ namespace Tests
     public class UnitTest1
     {
         [TestMethod]
-        public void TestDeserializeWFFile()
+        public void TestDeserializeWfFile()
         {
             var actualFile = FixedWidthSerializer.Deserialize<PositivePayFile>(Properties.Resources.pos_AP_20200207211501810);
 
@@ -75,7 +75,7 @@ namespace Tests
         {
             if (source == null && target == null) return true;
             if (source != null && target == null) return false;
-            if (source == null && target != null) return false;
+            if (source == null) return false;
 
             var props = source.GetType().GetProperties().Where(p => p.CanRead);
             foreach (var prop in props)
@@ -86,8 +86,8 @@ namespace Tests
                     var rightEnumerable = prop.GetValue(target) as ICollection;
 
                     if (leftEnumerable == null && rightEnumerable == null) continue;
-                    if (leftEnumerable == null && rightEnumerable != null) return false;
-                    if (leftEnumerable != null & rightEnumerable == null) return false;
+                    if (leftEnumerable == null) return false;
+                    if (true & rightEnumerable == null) return false;
                     if (leftEnumerable.Count != rightEnumerable.Count) return false;
 
                     var leftEnumerator = leftEnumerable.GetEnumerator();

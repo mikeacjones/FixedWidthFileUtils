@@ -8,7 +8,7 @@ namespace FixedWidthFileUtils.Attributes
     [AttributeUsage(AttributeTargets.Property)]
     public class FixedFieldSerializerAttribute : Attribute
     {
-        public Type Type { get; }
+        public readonly Type Type;
         /// <summary>
         /// Creates a new FixedFieldSerializerAttribute which uses the specific FixedFieldSerializer{T}
         /// </summary>

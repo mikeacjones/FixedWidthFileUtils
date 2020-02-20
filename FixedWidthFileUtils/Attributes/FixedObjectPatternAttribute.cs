@@ -8,7 +8,7 @@ namespace FixedWidthFileUtils.Attributes
     [AttributeUsage(AttributeTargets.Class)]
     public class FixedObjectPatternAttribute : Attribute
     {
-        public string MatchPattern { get; }
+        public readonly string MatchPattern;
 
         public FixedObjectPatternAttribute(string matchPattern)
         {

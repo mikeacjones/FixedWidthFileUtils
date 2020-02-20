@@ -9,11 +9,11 @@ namespace FixedWidthFileUtils.Attributes
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
     public class FixedFieldAttribute : Attribute
     {
-        public int Position { get; }
-        public int Width { get; }
-        public char Padder { get; }
-        public FixedFieldAlignment Alignment { get; }
-        public FixedFieldOverflowMode OverflowMode { get; }
+        public readonly int Position;
+        public readonly int Width;
+        public readonly char Padder;
+        public readonly FixedFieldAlignment Alignment;
+        public readonly FixedFieldOverflowMode OverflowMode;
         /// <summary>
         /// Creates a new FixedFieldAttribute
         /// </summary>
