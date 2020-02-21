@@ -50,9 +50,6 @@
     <Compile Include="Serializers\DefaultSerializer{T}.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="FixedWidthFileUtils.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
