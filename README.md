@@ -52,7 +52,7 @@ Bill      Jones     0000001235
 */
 List<Person> people = null;
 using (FileStream fs = new FileStream(sampleFile))
-    FixedWidthSerializer.Deserialize<List<Person>>(fs);
+    people = FixedWidthSerializer.Deserialize<List<Person>>(fs);
 if (people != null)
 {
     foreach (var person in people)
