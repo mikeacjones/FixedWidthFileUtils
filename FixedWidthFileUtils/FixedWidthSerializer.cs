@@ -223,8 +223,15 @@ namespace FixedWidthFileUtils
             var list = new List<TType>();
 
             TType item;
-            while ((item = Deserialize<TType>(inputStream, true)) != null)
-                list.Add(item);
+
+            try
+            {
+                while ((item = Deserialize<TType>(inputStream, true)) != null)
+                    list.Add(item);
+            }
+            catch (IndexOutOfRangeException) { }
+
+            if (list.Count == 0) throw new IndexOutOfRangeException();
 
             if (typeof(TResult).IsArray)
                 return list.ToArray<TType>() as TResult;
