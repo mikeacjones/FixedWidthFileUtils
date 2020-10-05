@@ -57,6 +57,82 @@ namespace Tests
         }
 
         [TestMethod]
+        public void TestSerialization()
+        {
+            var PositivePayFile = new PositivePayFile()
+            {
+                Header = new FileHeader()
+                {
+                    AccountNumber = 12345,
+                    BankID = 9999
+                },
+                CheckGroups = new[]
+                {
+                    new CheckGroup()
+                    {
+                        Records = new[]
+                        {
+                            new CheckRecord()
+                            {
+                                CheckSerial = 5555555555,
+                                IssueDate = DateTime.Now,
+                                AccountNumber = 77777777,
+                                Amount = 1.00M,
+                                Payee = "THIS IS A TEST"
+                            }
+                        },
+                        Trailer = new CheckGroupTrailer()
+                        {
+                            RecordCount = 1,
+                            TotalAmount = 1.00M
+                        }
+                    },
+                                        new CheckGroup()
+                    {
+                        Records = new[]
+                        {
+                            new CheckRecord()
+                            {
+                                CheckSerial = 5555555555,
+                                IssueDate = DateTime.Now,
+                                AccountNumber = 77777777,
+                                Amount = 1.00M,
+                                Payee = "THIS IS A TEST"
+                            },
+                            new CheckRecord()
+                            {
+                                CheckSerial = 5555555555,
+                                IssueDate = DateTime.Now,
+                                AccountNumber = 77777777,
+                                Amount = 1.00M,
+                                Payee = "THIS IS A TEST"
+                            }
+                        },
+                        Trailer = new CheckGroupTrailer()
+                        {
+                            RecordCount = 2,
+                            TotalAmount = 2.00M
+                        }
+                    }
+                },
+                Trailer = new FileTrailer()
+                {
+                    Start = "%00"
+                }
+            };
+            File.WriteAllText(@"C:\temp\testFile.txt", FixedWidthSerializer.Serialize(PositivePayFile));
+        }
+
+        [TestMethod]
+        public void TestDeserializeIssue2()
+        {
+            using (var fs = new FileStream(@"C:\temp\testFile.txt", FileMode.Open, FileAccess.Read))
+            {
+                PositivePayFile deserializeResults = FixedWidthSerializer.Deserialize<PositivePayFile>(fs);
+            }
+        }
+
+        [TestMethod]
         public void LargeFileText()
         {
             PositivePayFile pf;
