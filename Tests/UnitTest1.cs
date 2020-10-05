@@ -141,6 +141,9 @@ namespace Tests
 
         [FixedField(1)]
         public CheckGroup[] CheckGroups { get; set; }
+
+        [FixedField(2)]
+        public FileTrailer Trailer { get; set; }
     }
     public class FileHeader
     {
@@ -207,6 +210,12 @@ namespace Tests
         [FixedField(2, 3, ' ')]
         [FixedField(4, 47, ' ')]
         public string Spacer => string.Empty;
+    }
+    [FixedObjectPattern("^%")]
+    public class FileTrailer
+    {
+        [FixedField(0, 3, ' ', FixedFieldAlignment.Left)]
+        public string Start { get; set; }
     }
     #endregion
 
