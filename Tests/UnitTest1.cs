@@ -124,7 +124,7 @@ namespace Tests
         }
 
         [TestMethod]
-        public void TestDeserializeIssue2()
+        public void TestDeserializeIssue4()
         {
             using (var fs = new FileStream(@"C:\temp\testFile.txt", FileMode.Open, FileAccess.Read))
             {
