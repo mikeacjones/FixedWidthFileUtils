@@ -118,8 +118,14 @@ namespace FixedWidthFileUtils
             if (!typeof(TResult).IsEnumerable()) return DeserializeObject<TResult>(inputStream, partOfEnum);
             var itemType = typeof(TResult).GetItemType();
             var deserializeFunc = ExpressionHelper.GetDeserializeEnumerable<TResult>(itemType);
-            return deserializeFunc(inputStream) as TResult;
 
+            try
+            {
+                return deserializeFunc(inputStream) as TResult;
+            } catch
+            {
+                return null;
+            }
         }
         /// <summary>
         /// Deserializes an object
@@ -146,11 +152,15 @@ namespace FixedWidthFileUtils
 
 
             var result = Activator.CreateInstance(typeof(TResult)) as TResult;
+            bool setAField = false;
             foreach (var field in fields)
             {
                 var deserializeFunc = ExpressionHelper.GetDeserialize(field.Property.PropertyType);
-                field.Property.Set(result, deserializeFunc(inputStream, partOfEnum));
+                object val = deserializeFunc(inputStream, partOfEnum);
+                field.Property.Set(result, val);
+                if (val != null) setAField = true;
             }
+            if (partOfEnum && !setAField) return null; //assume we are outside of the array now. Fixed width files is such a horrid format...
             return result;
         }
         /// <summary>
