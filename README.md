@@ -38,7 +38,7 @@ Person p = new Person
     ID = 1234
 };
 
-string result = FixedWidthSerializer.Serialize(Person);
+string result = FixedWidthSerializer.Serialize(p);
 //Mike      Jones     0000001234
 ```
 
